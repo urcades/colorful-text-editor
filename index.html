@@ -1,71 +1,90 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Fibonacci Perlin Noise WebGL Gradient Editable Page with Slower Transitions</title>
-        <style>
-            body {
-                margin: 0;
-                overflow: hidden;
-            }
-            #editor {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                padding: 20px;
-                box-sizing: border-box;
-                color: white;
-                background: transparent;
-                outline: none;
-                white-space: pre-wrap;
-                overflow-y: auto;
-                font-size: 1.55em;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="editor" contenteditable="true">This entire viewport is editable.
-Click anywhere and start typing!
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Text environment with dynamic background effects"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:title" content="Text Environment" />
+    <meta
+      property="og:description"
+      content="Text environment with dynamic background effects"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✍️</text></svg>"
+    />
+    <title>Text Environment</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      }
+      #editor {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        color: white;
+        background: transparent;
+        outline: none;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        font-size: 1.55em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="editor" contenteditable="true">
+      This entire viewport is editable. Click anywhere and start typing! The
+      background now changes more slowly and smoothly as you type.
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+    <script>
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-The background now changes more slowly and smoothly as you type.</div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
-        <script>
-            const scene = new THREE.Scene();
-            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            const geometry = new THREE.PlaneGeometry(2, 2);
-            const material = new THREE.ShaderMaterial({
-                uniforms: {
-                    u_time: { value: 0 },
-                    u_resolution: { value: new THREE.Vector2() },
-                    u_colorA: { value: new THREE.Color(0.5, 0.0, 0.5) },
-                    u_colorB: { value: new THREE.Color(0.0, 0.5, 0.5) },
-                    u_colorC: { value: new THREE.Color(0.8, 0.2, 0.3) },
-                    u_textInfluence: { value: 0 },
-                    u_rotation: { value: 0 },
-                    u_fib1: { value: 1.0 },
-                    u_fib2: { value: 1.0 },
-                    u_wordCount: { value: 0 },
-                    u_lineCount: { value: 0 },
-                    u_cursorPosition: { value: new THREE.Vector2() }
-                },
-                vertexShader: `
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          u_time: { value: 0 },
+          u_resolution: { value: new THREE.Vector2() },
+          u_colorA: { value: new THREE.Color(0.5, 0.0, 0.5) },
+          u_colorB: { value: new THREE.Color(0.0, 0.5, 0.5) },
+          u_colorC: { value: new THREE.Color(0.8, 0.2, 0.3) },
+          u_textInfluence: { value: 0 },
+          u_rotation: { value: 0 },
+          u_fib1: { value: 1.0 },
+          u_fib2: { value: 1.0 },
+          u_wordCount: { value: 0 },
+          u_lineCount: { value: 0 },
+          u_cursorPosition: { value: new THREE.Vector2() },
+        },
+        vertexShader: `
                     varying vec2 vUv;
                     void main() {
                         vUv = uv;
                         gl_Position = vec4(position, 1.0);
                     }
                 `,
-                fragmentShader: `
+        fragmentShader: `
                     uniform float u_time;
                     uniform vec2 u_resolution;
                     uniform vec3 u_colorA;
@@ -157,205 +176,216 @@ The background now changes more slowly and smoothly as you type.</div>
 
                         gl_FragColor = vec4(color, 1.0);
                     }
-                `
-            });
+                `,
+      });
 
-            const mesh = new THREE.Mesh(geometry, material);
-            scene.add(mesh);
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
 
-            function animate(time) {
-                requestAnimationFrame(animate);
-                material.uniforms.u_time.value = time * 0.001;
-                renderer.render(scene, camera);
-            }
+      function animate(time) {
+        requestAnimationFrame(animate);
+        material.uniforms.u_time.value = time * 0.001;
+        renderer.render(scene, camera);
+      }
 
-            animate();
+      animate();
 
-            window.addEventListener('resize', onWindowResize, false);
-            function onWindowResize() {
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                material.uniforms.u_resolution.value.x = renderer.domElement.width;
-                material.uniforms.u_resolution.value.y = renderer.domElement.height;
-            }
-            onWindowResize();
+      window.addEventListener("resize", onWindowResize, false);
+      function onWindowResize() {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        material.uniforms.u_resolution.value.x = renderer.domElement.width;
+        material.uniforms.u_resolution.value.y = renderer.domElement.height;
+      }
+      onWindowResize();
 
-            let lastUpdateTime = 0;
-            const updateInterval = 500; // Update every 500ms
-            let pendingUpdate = null;
+      let lastUpdateTime = 0;
+      const updateInterval = 500; // Update every 500ms
+      let pendingUpdate = null;
 
-            function hslToRgb(h, s, l) {
-                let r, g, b;
-                if (s === 0) {
-                    r = g = b = l;
-                } else {
-                    const hue2rgb = (p, q, t) => {
-                        if (t < 0) t += 1;
-                        if (t > 1) t -= 1;
-                        if (t < 1/6) return p + (q - p) * 6 * t;
-                        if (t < 1/2) return q;
-                        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                        return p;
-                    };
-                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                    const p = 2 * l - q;
-                    r = hue2rgb(p, q, h + 1/3);
-                    g = hue2rgb(p, q, h);
-                    b = hue2rgb(p, q, h - 1/3);
-                }
-                return new THREE.Color(r, g, b);
-            }
+      function hslToRgb(h, s, l) {
+        let r, g, b;
+        if (s === 0) {
+          r = g = b = l;
+        } else {
+          const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+          };
+          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          const p = 2 * l - q;
+          r = hue2rgb(p, q, h + 1 / 3);
+          g = hue2rgb(p, q, h);
+          b = hue2rgb(p, q, h - 1 / 3);
+        }
+        return new THREE.Color(r, g, b);
+      }
 
-            function generateInterestingColor(seed) {
-                const hue = (seed * 0.618033988749895 + 0.618033988749895) % 1;
-                const saturation = 0.5 + (seed * 0.5);
-                const lightness = 0.4 + (seed * 0.2);
-                return hslToRgb(hue, saturation, lightness);
-            }
+      function generateInterestingColor(seed) {
+        const hue = (seed * 0.618033988749895 + 0.618033988749895) % 1;
+        const saturation = 0.5 + seed * 0.5;
+        const lightness = 0.4 + seed * 0.2;
+        return hslToRgb(hue, saturation, lightness);
+      }
 
-            let lastColorChangeLength = 0;
-            let fib1 = 1, fib2 = 1;
+      let lastColorChangeLength = 0;
+      let fib1 = 1,
+        fib2 = 1;
 
-            function updateColors(text) {
-                const currentTime = Date.now();
-                if (currentTime - lastUpdateTime < updateInterval) {
-                    if (pendingUpdate) {
-                        clearTimeout(pendingUpdate);
-                    }
-                    pendingUpdate = setTimeout(() => {
-                        updateColors(text);
-                    }, updateInterval - (currentTime - lastUpdateTime));
-                    return;
-                }
+      function updateColors(text) {
+        const currentTime = Date.now();
+        if (currentTime - lastUpdateTime < updateInterval) {
+          if (pendingUpdate) {
+            clearTimeout(pendingUpdate);
+          }
+          pendingUpdate = setTimeout(() => {
+            updateColors(text);
+          }, updateInterval - (currentTime - lastUpdateTime));
+          return;
+        }
 
-                lastUpdateTime = currentTime;
-                pendingUpdate = null;
+        lastUpdateTime = currentTime;
+        pendingUpdate = null;
 
-                const textLength = text.length;
-                const shouldChangeColor = Math.floor(textLength / 11) !== Math.floor(lastColorChangeLength / 11);
+        const textLength = text.length;
+        const shouldChangeColor =
+          Math.floor(textLength / 11) !==
+          Math.floor(lastColorChangeLength / 11);
 
-                if (shouldChangeColor) {
-                    const hash = text.split('').reduce((acc, char) => {
-                        return char.charCodeAt(0) + ((acc << 5) - acc);
-                    }, 0);
-                    
-                    const seed1 = (hash & 0xFF) / 255;
-                    const seed2 = ((hash >> 8) & 0xFF) / 255;
-                    const seed3 = ((hash >> 16) & 0xFF) / 255;
+        if (shouldChangeColor) {
+          const hash = text.split("").reduce((acc, char) => {
+            return char.charCodeAt(0) + ((acc << 5) - acc);
+          }, 0);
 
-                    const color1 = generateInterestingColor(seed1);
-                    const color2 = generateInterestingColor(seed2);
-                    const color3 = generateInterestingColor(seed3);
+          const seed1 = (hash & 0xff) / 255;
+          const seed2 = ((hash >> 8) & 0xff) / 255;
+          const seed3 = ((hash >> 16) & 0xff) / 255;
 
-                    gsap.to(material.uniforms.u_colorA.value, {
-                        r: color1.r, g: color1.g, b: color1.b,
-                        duration: 3,
-                        ease: "power2.inOut"
-                    });
-                    gsap.to(material.uniforms.u_colorB.value, {
-                        r: color2.r, g: color2.g, b: color2.b,
-                        duration: 3,
-                        ease: "power2.inOut"
-                    });
-                    gsap.to(material.uniforms.u_colorC.value, {
-                        r: color3.r, g: color3.g, b: color3.b,
-                        duration: 3,
-                        ease: "power2.inOut"
-                    });
+          const color1 = generateInterestingColor(seed1);
+          const color2 = generateInterestingColor(seed2);
+          const color3 = generateInterestingColor(seed3);
 
-                    lastColorChangeLength = textLength;
-                }
+          gsap.to(material.uniforms.u_colorA.value, {
+            r: color1.r,
+            g: color1.g,
+            b: color1.b,
+            duration: 3,
+            ease: "power2.inOut",
+          });
+          gsap.to(material.uniforms.u_colorB.value, {
+            r: color2.r,
+            g: color2.g,
+            b: color2.b,
+            duration: 3,
+            ease: "power2.inOut",
+          });
+          gsap.to(material.uniforms.u_colorC.value, {
+            r: color3.r,
+            g: color3.g,
+            b: color3.b,
+            duration: 3,
+            ease: "power2.inOut",
+          });
 
-                const nextFib = fib1 + fib2;
-                fib1 = fib2;
-                fib2 = nextFib;
+          lastColorChangeLength = textLength;
+        }
 
-                const normalizedFib1 = (fib1 % 100) / 10;
-                const normalizedFib2 = (fib2 % 100) / 10;
+        const nextFib = fib1 + fib2;
+        fib1 = fib2;
+        fib2 = nextFib;
 
-                gsap.to(material.uniforms.u_fib1, {
-                    value: normalizedFib1,
-                    duration: 2,
-                    ease: "power2.inOut"
-                });
-                gsap.to(material.uniforms.u_fib2, {
-                    value: normalizedFib2,
-                    duration: 2,
-                    ease: "power2.inOut"
-                });
+        const normalizedFib1 = (fib1 % 100) / 10;
+        const normalizedFib2 = (fib2 % 100) / 10;
 
-                gsap.to(material.uniforms.u_textInfluence, {
-                    value: Math.min(textLength / 100, 1),
-                    duration: 2,
-                    ease: "power2.inOut"
-                });
+        gsap.to(material.uniforms.u_fib1, {
+          value: normalizedFib1,
+          duration: 2,
+          ease: "power2.inOut",
+        });
+        gsap.to(material.uniforms.u_fib2, {
+          value: normalizedFib2,
+          duration: 2,
+          ease: "power2.inOut",
+        });
 
-                const rotation = (textLength / 22) * (Math.PI / 180);
-                gsap.to(material.uniforms.u_rotation, {
-                    value: rotation,
-                    duration: 2,
-                    ease: "power2.inOut"
-                });
-            }
+        gsap.to(material.uniforms.u_textInfluence, {
+          value: Math.min(textLength / 100, 1),
+          duration: 2,
+          ease: "power2.inOut",
+        });
 
-            const editor = document.getElementById('editor');
-            let typingTimer;
-            const doneTypingInterval = 1000; // Wait for 1 second of inactivity
+        const rotation = (textLength / 22) * (Math.PI / 180);
+        gsap.to(material.uniforms.u_rotation, {
+          value: rotation,
+          duration: 2,
+          ease: "power2.inOut",
+        });
+      }
 
-            editor.addEventListener('input', () => {
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(() => {
-                    updateColors(editor.innerText);
-                }, doneTypingInterval);
-            });
+      const editor = document.getElementById("editor");
+      let typingTimer;
+      const doneTypingInterval = 1000; // Wait for 1 second of inactivity
 
-            editor.addEventListener('mousemove', (e) => {
-                const rect = editor.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width;
-                const y = 1.0 - (e.clientY - rect.top) / rect.height;
-                
-                // Update shader uniforms
-                gsap.to(material.uniforms.u_cursorPosition.value, {
-                    x: x,
-                    y: y,
-                    duration: 0.5,
-                    ease: "power2.out"
-                });
-                
-                // Calculate distance from cursor to center
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const deltaX = (e.clientX - centerX) / rect.width;
-                const deltaY = (e.clientY - centerY) / rect.height;
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                
-                // Apply subtle transform to text
-                const maxOffset = 10; // maximum pixels to move
-                const transform = `translate(${deltaX * maxOffset}px, ${deltaY * maxOffset}px)`;
-                gsap.to(editor, {
-                    transform,
-                    duration: 0.5,
-                    ease: "power2.out"
-                });
-            });
+      editor.addEventListener("input", () => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          updateColors(editor.innerText);
+        }, doneTypingInterval);
+      });
 
-            editor.addEventListener('mouseleave', () => {
-                // Reset shader uniforms
-                gsap.to(material.uniforms.u_cursorPosition.value, {
-                    x: 0.5,
-                    y: 0.5,
-                    duration: 1,
-                    ease: "power2.inOut"
-                });
-                
-                // Reset text position
-                gsap.to(editor, {
-                    transform: 'translate(0, 0)',
-                    duration: 1,
-                    ease: "power2.inOut"
-                });
-            });
+      editor.addEventListener("mousemove", (e) => {
+        const rect = editor.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = 1.0 - (e.clientY - rect.top) / rect.height;
 
-            updateColors(editor.innerText);
-        </script>
-    </body>
+        // Update shader uniforms
+        gsap.to(material.uniforms.u_cursorPosition.value, {
+          x: x,
+          y: y,
+          duration: 0.5,
+          ease: "power2.out",
+        });
+
+        // Calculate distance from cursor to center
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const deltaX = (e.clientX - centerX) / rect.width;
+        const deltaY = (e.clientY - centerY) / rect.height;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Apply subtle transform to text
+        const maxOffset = 10; // maximum pixels to move
+        const transform = `translate(${deltaX * maxOffset}px, ${
+          deltaY * maxOffset
+        }px)`;
+        gsap.to(editor, {
+          transform,
+          duration: 0.5,
+          ease: "power2.out",
+        });
+      });
+
+      editor.addEventListener("mouseleave", () => {
+        // Reset shader uniforms
+        gsap.to(material.uniforms.u_cursorPosition.value, {
+          x: 0.5,
+          y: 0.5,
+          duration: 1,
+          ease: "power2.inOut",
+        });
+
+        // Reset text position
+        gsap.to(editor, {
+          transform: "translate(0, 0)",
+          duration: 1,
+          ease: "power2.inOut",
+        });
+      });
+
+      updateColors(editor.innerText);
+    </script>
+  </body>
 </html>
